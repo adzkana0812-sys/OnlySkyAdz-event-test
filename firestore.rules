@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net - Default Deny Catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Submissions collection matching constraints
+    match /submissions/{submissionId} {
+      // Create is public but strictly schema-validated
+      allow create: if isValidId(submissionId)
+                    && isValidSubmission(incoming())
+                    && incoming().id == submissionId;
+                    
+      // Read is individual only - blanket list querying is forbidden
+      allow get: if true;
+      allow list: if false;
+
+      // Update and delete are restricted to administrators
+      allow update: if isAdmin() && isValidSubmission(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // Helper Functions
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    
+    // Check if user is logged in and is listed in the /admins collection
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { 
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); 
+    }
+
+    // Validate alphanumeric unique IDs
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Strict validation of the Submission object structure and types
+    function isValidSubmission(sub) {
+      return sub.keys().hasAll(['id', 'username', 'usernameLower', 'imageProof', 'status', 'createdAt'])
+        && sub.keys().size() <= 7 // Enforce no shadow fields or malicious properties
+        && sub.id is string && sub.id.size() <= 128
+        && sub.username is string && sub.username.size() >= 3 && sub.username.size() <= 100
+        && sub.usernameLower is string && sub.usernameLower.size() >= 3 && sub.usernameLower.size() <= 100
+        && sub.imageProof is string && sub.imageProof.size() <= 16000000 // Up to 12MB base64 image data
+        && sub.status in ['pending', 'approved', 'rejected']
+        && sub.createdAt is string; // ISO string format checked
+    }
+  }
+}

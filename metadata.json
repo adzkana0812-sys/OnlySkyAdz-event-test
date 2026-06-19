@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Verifikasi Menyelesaikan Event",
+  "description": "Portal verifikasi penyelesaian event dengan panel admin untuk memproses persetujuan rilis Robux.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

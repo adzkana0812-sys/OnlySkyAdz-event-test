@@ -1,0 +1,47 @@
+{
+  "entities": {
+    "submission": {
+      "title": "Submission",
+      "description": "Event submission for Roblox 500 Robux prize",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique ID of submission"
+        },
+        "username": {
+          "type": "string",
+          "description": "Roblox username of applicant"
+        },
+        "usernameLower": {
+          "type": "string",
+          "description": "Lowercase Roblox username for fast querying"
+        },
+        "imageProof": {
+          "type": "string",
+          "description": "Base64 screenshot proof"
+        },
+        "gamepassLink": {
+          "type": "string",
+          "description": "Roblox Game Pass link"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"],
+          "description": "Moderation status"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Submission creation timestamp"
+        }
+      },
+      "required": ["id", "username", "usernameLower", "imageProof", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/submissions/{submissionId}": {
+      "schema": "entities/submission",
+      "description": "Collection of submissions for the Roblox 500 Robux event"
+    }
+  }
+}
